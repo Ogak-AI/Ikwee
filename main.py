@@ -42,6 +42,18 @@ def health_check():
 def head_health():
     return Response(status_code=200)
 
+@app.get("/debug/db_status")
+def db_status(db: Session = Depends(database.get_db)):
+    """
+    Diagnostic route to check the number of records in the database.
+    """
+    return {
+        "users": db.query(models.User).count(),
+        "modules": db.query(models.Module).count(),
+        "lessons": db.query(models.Lesson).count(),
+        "quizzes": db.query(models.Quiz).count()
+    }
+
 @app.post("/ussd")
 async def ussd_callback(request: Request, db: Session = Depends(database.get_db)):
     """
@@ -73,11 +85,13 @@ async def ussd_callback(request: Request, db: Session = Depends(database.get_db)
 def seed_curriculum(db: Session = Depends(database.get_db)):
     """
     Admin route to inject sample curriculum into the live database.
-    This replaces the old mock file.
+    Now more robust: deletes existing curriculum before re-seeding.
     """
-    existing_mod = db.query(models.Module).first()
-    if existing_mod:
-        return {"status": "Database already contains curriculum"}
+    # Clear existing curriculum to ensure a clean state
+    db.execute(text("DELETE FROM quizzes"))
+    db.execute(text("DELETE FROM lessons"))
+    db.execute(text("DELETE FROM modules"))
+    db.commit()
         
     # Module 1
     m1 = models.Module(title="Module 1: TVET Agritech", order_seq=1)
@@ -91,6 +105,7 @@ def seed_curriculum(db: Session = Depends(database.get_db)):
     l2 = models.Lesson(module_id=m1.id, step_seq=1, lesson_type="quiz", text_content="What is ideal soil pH?\n1. 3-4\n2. 6-7\n3. 9-10")
     db.add_all([l1, l2])
     db.commit()
+    db.refresh(l1)
     db.refresh(l2)
     
     # Save Quiz specifics tied to lesson l2
@@ -98,7 +113,7 @@ def seed_curriculum(db: Session = Depends(database.get_db)):
     db.add(q1)
     db.commit()
     
-    return {"status": "Database seeded with Module 1!"}
+    return {"status": "Database successfully reset and seeded with Module 1!"}
 
 if __name__ == "__main__":
     import uvicorn

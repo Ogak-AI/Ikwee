@@ -10,8 +10,11 @@ def get_or_create_user(db: Session, phone_number: str):
         db.commit()
         db.refresh(user)
         
-        # init progress (Starting at Module order 1, step 0)
-        progress = models.UserProgress(user_id=user.id, current_module_id=1, current_lesson_step=0)
+        # init progress: Find the module with the lowest order_seq (usually 1)
+        first_module = db.query(models.Module).order_by(models.Module.order_seq.asc()).first()
+        start_module_seq = first_module.order_seq if first_module else 1
+        
+        progress = models.UserProgress(user_id=user.id, current_module_id=start_module_seq, current_lesson_step=0)
         db.add(progress)
         db.commit()
     return user
@@ -69,6 +72,11 @@ def handle_curriculum(user: models.User, inputs: list, db: Session) -> str:
     module = db.query(models.Module).filter(models.Module.order_seq == progress.current_module_id).first()
     
     if not module:
+        # Check if there ARE any modules at all
+        any_module = db.query(models.Module).first()
+        if not any_module:
+            return "END Our learning content is currently being updated. Please check back in a few minutes!"
+            
         return "END Congratulations! You have completed all currently available modules. We will SMS you when more are added."
         
     if len(inputs) == 0 or inputs[0] == "":
