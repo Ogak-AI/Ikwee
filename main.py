@@ -16,11 +16,11 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Ikwéé Production Platform")
 
-@app.get("/", methods=["GET", "HEAD"])
+@app.api_route("/", methods=["GET", "HEAD"])
 def read_root():
     return {"status": "Production Webhook is Live"}
 
-@app.get("/health", methods=["GET", "HEAD"])
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     """
     Render health-check endpoint. Keeps the free-tier service warm
