@@ -1,8 +1,14 @@
-from fastapi import FastAPI, Depends, Request, Response, BackgroundTasks
+from fastapi import FastAPI, Depends, Request, Response
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import database
 import models
 import ussd_logic
+import logging
+
+# Configure logging so all USSD requests are visible in Render logs
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger(__name__)
 
 # Automatically create sqlite tables based on models
 models.Base.metadata.create_all(bind=database.engine)
@@ -13,22 +19,40 @@ app = FastAPI(title="Ikwéé Production Platform")
 def read_root():
     return {"status": "Production Webhook is Live"}
 
+@app.get("/health")
+def health_check():
+    """
+    Render health-check endpoint. Keeps the free-tier service warm
+    and confirms the DB connection is alive.
+    """
+    try:
+        db = next(database.get_db())
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "db": "connected"}
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {"status": "degraded", "error": str(e)}
+
 @app.post("/ussd")
 async def ussd_callback(request: Request, db: Session = Depends(database.get_db)):
     """
     Africa's Talking webhooks send application/x-www-form-urlencoded data.
     """
     form_data = await request.form()
-    
-    session_id = form_data.get("sessionId")
-    service_code = form_data.get("serviceCode")
+
+    session_id   = form_data.get("sessionId", "")
+    service_code = form_data.get("serviceCode", "")
     phone_number = form_data.get("phoneNumber", "")
-    text = form_data.get("text", "")
-    
+    text         = form_data.get("text", "")
+
+    logger.info(f"USSD | session={session_id} | phone={phone_number} | code={service_code} | text='{text}'")
+
     if not phone_number:
+        logger.warning("USSD request received with no phoneNumber — returning END")
         return Response(content="END Missing Phone Number", media_type="text/plain")
-        
+
     response_text = ussd_logic.process_ussd(phone_number, text, db)
+    logger.info(f"USSD | response -> {response_text[:60]}")
     return Response(content=response_text, media_type="text/plain")
 
 @app.post("/admin/seed_curriculum")

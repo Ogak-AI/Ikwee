@@ -5,6 +5,7 @@ services:
     repo: https://github.com/Ogak-AI/Ikwee
     region: oregon
     plan: free
+    healthCheckPath: /health
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
