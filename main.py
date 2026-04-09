@@ -20,6 +20,10 @@ app = FastAPI(title="Ikwéé Production Platform")
 def read_root():
     return {"status": "Production Webhook is Live"}
 
+@app.head("/")
+def head_root():
+    return Response(status_code=200)
+
 @app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     """
@@ -33,6 +37,10 @@ def health_check():
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return {"status": "degraded", "error": str(e)}
+
+@app.head("/health")
+def head_health():
+    return Response(status_code=200)
 
 @app.post("/ussd")
 async def ussd_callback(request: Request, db: Session = Depends(database.get_db)):
