@@ -4,3 +4,4 @@ sqlalchemy
 pydantic
 africastalking
 python-dotenv
+python-multipart
