@@ -5,8 +5,9 @@ import database
 import models
 import ussd_logic
 import logging
+import traceback
 
-# Configure logging so all USSD requests are visible in Render logs
+# Configure logging so all USSD requests and errors are visible in Render logs
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -51,9 +52,14 @@ async def ussd_callback(request: Request, db: Session = Depends(database.get_db)
         logger.warning("USSD request received with no phoneNumber — returning END")
         return Response(content="END Missing Phone Number", media_type="text/plain")
 
-    response_text = ussd_logic.process_ussd(phone_number, text, db)
-    logger.info(f"USSD | response -> {response_text[:60]}")
-    return Response(content=response_text, media_type="text/plain")
+    try:
+        response_text = ussd_logic.process_ussd(phone_number, text, db)
+        logger.info(f"USSD | response -> {response_text[:60]}")
+        return Response(content=response_text.strip(), media_type="text/plain")
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        logger.error(f"USSD ERROR | Exception: {e}\n{error_trace}")
+        return Response(content="END System error. Please try again later.", media_type="text/plain")
 
 @app.post("/admin/seed_curriculum")
 def seed_curriculum(db: Session = Depends(database.get_db)):

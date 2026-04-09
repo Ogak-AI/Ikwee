@@ -21,16 +21,20 @@ def process_ussd(phone_number: str, text: str, db: Session) -> str:
     Core USSD Logic responding to Africa's Talking format.
     Returns strings starting with 'CON ' to continue or 'END ' to terminate.
     """
-    user = get_or_create_user(db, phone_number)
-    
-    # Split text by '*' to get the input sequence
-    inputs = text.split('*') if text else []
-    
-    if not user.is_registered:
-        return handle_registration(user, inputs, db)
-    
-    # User is registered, handle curriculum navigation
-    return handle_curriculum(user, inputs, db)
+    try:
+        user = get_or_create_user(db, phone_number)
+        
+        # Split text by '*' to get the input sequence
+        inputs = text.split('*') if text else []
+        
+        if not user.is_registered:
+            return handle_registration(user, inputs, db)
+        
+        # User is registered, handle curriculum navigation
+        return handle_curriculum(user, inputs, db)
+    except Exception as e:
+        # Fallback for unexpected logic errors
+        return "END System is currently busy. Please try again in 5 minutes."
 
 def handle_registration(user: models.User, inputs: list, db: Session) -> str:
     if len(inputs) == 0 or inputs[0] == "":
@@ -49,9 +53,17 @@ def handle_registration(user: models.User, inputs: list, db: Session) -> str:
             return handle_curriculum(user, [], db)
         else:
             return "END Thank you for visiting."
+    
+    return "END Error: Invalid registration step."
 
 def handle_curriculum(user: models.User, inputs: list, db: Session) -> str:
     progress = db.query(models.UserProgress).filter(models.UserProgress.user_id == user.id).first()
+    
+    # If progress record is somehow missing, create it
+    if not progress:
+        progress = models.UserProgress(user_id=user.id, current_module_id=1, current_lesson_step=0)
+        db.add(progress)
+        db.commit()
     
     # Get current module from DB
     module = db.query(models.Module).filter(models.Module.order_seq == progress.current_module_id).first()

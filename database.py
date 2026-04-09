@@ -5,7 +5,9 @@ from sqlalchemy.orm import sessionmaker
 import os
 
 # Default to local SQLite, but allow Render (or Postgres) to override via env variable
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ussd_platform.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+default_db_path = f"sqlite:///{os.path.join(BASE_DIR, 'ussd_platform.db')}"
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", default_db_path)
 
 # If using Postgres later from Render, SQLAlchemy needs 'postgresql://' not 'postgres://'
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
