@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ikwee-learning-platform
+    name: ikwee
     env: python
     repo: https://github.com/Ogak-AI/Ikwee
     region: oregon
