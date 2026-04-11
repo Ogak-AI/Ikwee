@@ -1,0 +1,80 @@
+{
+  "modules": [
+    {
+      "title": "Module 1: Measurement & Units",
+      "order_seq": 1,
+      "lessons": [
+        {
+          "step_seq": 0,
+          "type": "content",
+          "text": "FUNDAMENTAL UNITS: In JAMB Physics, the base units are Length (meter), Mass (kilogram), Time (second), Temperature (kelvin), Current (ampere), Luminous Intensity (candela), and Amount of substance (mole). All other units are Derived from these."
+        },
+        {
+          "step_seq": 1,
+          "type": "content",
+          "text": "DIMENSIONAL ANALYSIS: Dimensions show how a physical quantity is related to M (Mass), L (Length), and T (Time). For example, Velocity = L/T = [LT⁻¹]. Acceleration = [LT⁻²]."
+        },
+        {
+          "step_seq": 2,
+          "type": "content",
+          "text": "VERNIER CALIPER: This instrument measures small lengths with an accuracy of 0.01 cm (or 0.1 mm). It is used for measuring diameters of pipe or thicknesses of objects."
+        },
+        {
+          "step_seq": 3,
+          "type": "content",
+          "text": "MICROMETER SCREW GAUGE: For even smaller measurements, we use the micrometer. It is accurate to 0.001 cm (0.01 mm). Used for measuring the diameter of a thin wire."
+        },
+        {
+          "step_seq": 4,
+          "type": "content",
+          "text": "ERRORS: Systematic errors are due to faulty instruments (like zero error). Random errors are due to environmental changes or observer bias (parallax error). Always take readings at eye level!"
+        },
+        {
+          "step_seq": 5,
+          "type": "quiz",
+          "text": "What is the dimension for Force?\n1. [MLT⁻¹]\n2. [MLT⁻²]\n3. [ML²T⁻²]",
+          "answer": "2",
+          "feedback": "Force = Mass x Acceleration. Mass is [M], Acceleration is [LT⁻²], so Force is [MLT⁻²]."
+        }
+      ]
+    },
+    {
+      "title": "Module 2: Motion & Newton's Laws",
+      "order_seq": 2,
+      "lessons": [
+        {
+          "step_seq": 0,
+          "type": "content",
+          "text": "SCALARS & VECTORS: A scalar has only magnitude (e.g. Speed, Mass). A vector has both magnitude and direction (e.g. Velocity, Force, Displacement)."
+        },
+        {
+          "step_seq": 1,
+          "type": "content",
+          "text": "EQUATIONS OF MOTION: For uniform acceleration, we use 3 main equations: (1) v = u + at, (2) s = ut + 0.5at², (3) v² = u² + 2as."
+        },
+        {
+          "step_seq": 2,
+          "type": "content",
+          "text": "NEWTON'S 1ST LAW: Every body continues in its state of rest or uniform motion unless acted upon by an external force. This is the law of Inertia."
+        },
+        {
+          "step_seq": 3,
+          "type": "content",
+          "text": "NEWTON'S 2ND LAW: The rate of change of momentum is directly proportional to the applied force. F = ma is the mathematical form of this law."
+        },
+        {
+          "step_seq": 4,
+          "type": "content",
+          "text": "NEWTON'S 3RD LAW: To every action, there is an equal and opposite reaction. If you push a wall, the wall pushes you back with same force."
+        },
+        {
+          "step_seq": 5,
+          "type": "quiz",
+          "text": "Which of these is a Vector quantity?\n1. Speed\n2. Time\n3. Momentum",
+          "answer": "3",
+          "feedback": "Momentum = Mass x Velocity. Since Velocity is a vector, Momentum is also a vector."
+        }
+      ]
+    }
+  ]
+}

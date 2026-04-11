@@ -10,6 +10,12 @@ class User(Base):
     is_registered = Column(Boolean, default=False)
     name = Column(String, nullable=True)
     
+    # Subscription Metadata
+    is_subscribed = Column(Boolean, default=False)
+    subscription_type = Column(String, nullable=True) # e.g., 'JAMB', 'WAEC'
+    subscription_expiry = Column(Integer, nullable=True) # Unix timestamp or DateTime
+    last_broadcast_date = Column(String, nullable=True) # To prevent multiple sends per day
+    
 class UserProgress(Base):
     __tablename__ = "user_progress"
 

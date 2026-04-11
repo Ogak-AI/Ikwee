@@ -81,39 +81,104 @@ async def ussd_callback(request: Request, db: Session = Depends(database.get_db)
         logger.error(f"USSD ERROR | Exception: {e}\n{error_trace}")
         return Response(content="END System error. Please try again later.", media_type="text/plain")
 
+@app.post("/sms")
+async def sms_callback(request: Request, db: Session = Depends(database.get_db)):
+    """
+    Africa's Talking incoming SMS webhook.
+    """
+    import subscription_logic
+    from sms_engine import send_sms_nudge
+
+    form_data = await request.form()
+    
+    from_number = form_data.get("from", "")
+    text        = form_data.get("text", "")
+    link_id     = form_data.get("linkId", "") # Used for premium billing responses
+    
+    logger.info(f"SMS RECV | from={from_number} | text='{text}' | link_id={link_id}")
+
+    if not from_number or not text:
+        return Response(status_code=400)
+
+    try:
+        response_msg, keyword = subscription_logic.handle_incoming_sms(from_number, text, db)
+        
+        # Send a response back to the user. 
+        # If 'keyword' and 'link_id' are present, this will trigger the Premium charge.
+        send_sms_nudge(from_number, response_msg, keyword=keyword, link_id=link_id)
+        
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"SMS CALLBACK ERROR: {e}")
+        return Response(status_code=500)
+
 @app.post("/admin/seed_curriculum")
 def seed_curriculum(db: Session = Depends(database.get_db)):
     """
-    Admin route to inject sample curriculum into the live database.
-    Now more robust: deletes existing curriculum before re-seeding.
+    Admin route to inject curriculum from JSON files into the database.
     """
-    # Clear existing curriculum to ensure a clean state
+    import json
+    import os
+
+    # Clear existing data
     db.execute(text("DELETE FROM quizzes"))
     db.execute(text("DELETE FROM lessons"))
     db.execute(text("DELETE FROM modules"))
     db.commit()
-        
-    # Module 1
-    m1 = models.Module(title="Module 1: TVET Agritech", order_seq=1)
-    db.add(m1)
-    db.commit()
-    db.refresh(m1)
+
+    CURRICULUM_DIR = "curriculum"
+    files = [f for f in os.listdir(CURRICULUM_DIR) if f.endswith(".json")]
     
-    # Add Lesson content
-    l1 = models.Lesson(module_id=m1.id, step_seq=0, lesson_type="content", text_content="Lesson 1: Crops grow best when soil pH is balanced between 6 and 7.")
-    # Add Quiz
-    l2 = models.Lesson(module_id=m1.id, step_seq=1, lesson_type="quiz", text_content="What is ideal soil pH?\n1. 3-4\n2. 6-7\n3. 9-10")
-    db.add_all([l1, l2])
-    db.commit()
-    db.refresh(l1)
-    db.refresh(l2)
+    total_modules = 0
+    total_lessons = 0
+
+    # Start order_seq globally or reset per file? 
+    # Let's keep a global counter for modules to ensure unique keys
+    module_global_seq = 1
+
+    for filename in files:
+        filepath = os.path.join(CURRICULUM_DIR, filename)
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            
+            for mod_data in data.get("modules", []):
+                module = models.Module(
+                    title=mod_data["title"], 
+                    order_seq=module_global_seq
+                )
+                db.add(module)
+                db.commit()
+                db.refresh(module)
+                module_global_seq += 1
+                total_modules += 1
+                
+                for lesson_data in mod_data.get("lessons", []):
+                    lesson = models.Lesson(
+                        module_id=module.id,
+                        step_seq=lesson_data["step_seq"],
+                        lesson_type=lesson_data["type"],
+                        text_content=lesson_data["text"]
+                    )
+                    db.add(lesson)
+                    db.commit()
+                    db.refresh(lesson)
+                    total_lessons += 1
+                    
+                    if lesson_data["type"] == "quiz":
+                        quiz = models.Quiz(
+                            lesson_id=lesson.id,
+                            correct_answer=lesson_data["answer"],
+                            wrong_feedback=lesson_data["feedback"]
+                        )
+                        db.add(quiz)
+                        db.commit()
     
-    # Save Quiz specifics tied to lesson l2
-    q1 = models.Quiz(lesson_id=l2.id, correct_answer="2", wrong_feedback="Acidity (low pH) stunts root growth. Ideal is 6-7.")
-    db.add(q1)
-    db.commit()
-    
-    return {"status": "Database successfully reset and seeded with Module 1!"}
+    return {
+        "status": "Success", 
+        "modules_seeded": total_modules, 
+        "lessons_seeded": total_lessons,
+        "files_processed": files
+    }
 
 if __name__ == "__main__":
     import uvicorn

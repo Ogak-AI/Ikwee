@@ -1,0 +1,42 @@
+{
+  "modules": [
+    {
+      "title": "Module 1: Organization of Life",
+      "order_seq": 1,
+      "lessons": [
+        {
+          "step_seq": 0,
+          "type": "content",
+          "text": "CHARACTERISTICS OF LIFE: All living things share the 'MR NIGER D' traits: Movement, Respiration, Nutrition, Irritability (Sensitivity), Growth, Excretion, Reproduction, and Death."
+        },
+        {
+          "step_seq": 1,
+          "type": "content",
+          "text": "CLASSIFICATION: Living things are classified into 5 Kingdoms: Monera (Bacteria), Protista (Amoeba), Fungi (Mushrooms), Plantae, and Animalia. This follows the Linnaean hierarchy: Kingdom, Phylum, Class, Order, Family, Genus, Species."
+        },
+        {
+          "step_seq": 2,
+          "type": "content",
+          "text": "CELLS TO ORGANISMS: Life is organized in levels. Cells combine to form Tissues (e.g. Muscle). Tissues form Organs (e.g. Heart). Organs form Systems (e.g. Circulatory). Systems form the Organism."
+        },
+        {
+          "step_seq": 3,
+          "type": "content",
+          "text": "COMPLEXITY: Higher organisms like humans are multicellular and complex, requiring specialized systems (like lungs for breathing). Single-celled organisms like Amoeba perform all functions within one cell."
+        },
+        {
+          "step_seq": 4,
+          "type": "content",
+          "text": "IMPORTANCE: Biological organization allows for division of labor. Different organs specialize in different tasks, making the organism much more efficient than a single cell."
+        },
+        {
+          "step_seq": 5,
+          "type": "quiz",
+          "text": "In the Linnaean hierarchy, which level comes immediately after 'Class'?\n1. Family\n2. Order\n3. Genus",
+          "answer": "2",
+          "feedback": "The order is Kingdom, Phylum, Class, ORDER, Family, Genus, Species. (Memory tip: Keep Ponds Clean OR Fish Get Sick)."
+        }
+      ]
+    }
+  ]
+}

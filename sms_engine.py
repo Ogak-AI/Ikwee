@@ -26,23 +26,35 @@ else:
     )
 
 
-def send_sms_nudge(phone_number: str, message: str) -> bool:
+def send_sms_nudge(phone_number: str, message: str, keyword: str = None, link_id: str = None) -> bool:
     """
-    Sends an outbound SMS to the user via Africa's Talking.
-    Used for welcome messages, quiz feedback, and module completion nudges.
-    Raises an exception if the SMS fails so failures are always visible in logs.
+    Sends an outbound SMS. 
+    If 'keyword' and 'link_id' are provided, it acts as a Premium SMS response 
+    (charging the user's airtime based on your AT configuration).
     """
     if sms is None:
-        logger.error(
-            f"[SMS] Cannot send to {phone_number} — AT credentials not configured. "
-            "Set AT_USERNAME and AT_API_KEY environment variables."
-        )
+        logger.error(f"[SMS] Cannot send to {phone_number} — AT credentials missing.")
         return False
 
+    # Get shortCode from env if available
+    short_code = os.getenv("SENDER_ID") or os.getenv("AT_SHORTCODE")
+
     try:
-        response = sms.send(message, [phone_number])
+        # AT SDK send() accepts keyword, shortCode, and linkId for premium billing
+        params = {
+            "message": message,
+            "recipients": [phone_number]
+        }
+        if short_code:
+            params["short_code"] = short_code
+        if keyword:
+            params["keyword"] = keyword
+        if link_id:
+            params["link_id"] = link_id
+
+        response = sms.send(**params)
         logger.info(f"[SMS] Sent to {phone_number}: {response}")
         return True
     except Exception as e:
         logger.error(f"[SMS ERROR] Failed to send to {phone_number}: {e}")
-        raise
+        return False
